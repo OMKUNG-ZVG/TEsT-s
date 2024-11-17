@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadratic Equation Solver</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+        #equation {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        #answer {
+            font-size: 20px;
+            color: green;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            border-radius: 2rem;
+            border-color: red;
+        }
+        input {
+            background-color: skyblue;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+        label {
+            margin-right: 10px;
+        }
+        #timer {
+            font-size: 20px;
+            color: blue;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>สร้างสมการกำลังสอง</h1>
+    
+    <label for="minRange">:กำหนดค่าของคำตอบที่น้อยที่สุด</label>
+    <input type="number" id="minRange" value="-9" step="1" /><br>
+    <label for="maxRange">:กำหนดค่าของคำตอบที่มากที่สุด</label>
+    <input type="number" id="maxRange" value="9" step="1" />
+    <br /><br />
+
+    <p id="equation">สร้างสมการกำลังสอง" to see the quadratic equation.</p>
+    
+    <button id="generate-equation">สร้างสมการกำลังสอง</button>
+    <button id="show-answer" disabled>แสดงคำตอบ</button>
+    
+    <p id="answer"></p>
+    <p id="timer">เวลา: 0s</p>
+
+    <script>
+        let a, b, c, nig = 0; // Declare variables for the coefficients
+        let timerInterval; // To store the timer interval
+        let timerStart = 0; // Timer start time in seconds
+
+        // Function to start the timer
+        function startTimer() {
+            if (nig == 0) {
+                document.getElementById('timer').innerText = `Time: 0s`; // Reset timer display to 0
+                timerInterval = setInterval(function() {
+                    timerStart += 0.01;
+                    document.getElementById('timer').innerText = `Time: ${timerStart.toFixed(2)}s`;
+                }, 10); // Update every 10ms
+            } else {
+                return (0);
+            }
+            nig = 1;
+        }
+
+        // Function to stop the timer (but do not reset the timer)
+        function stopTimer() {
+            clearInterval(timerInterval); // Stops the timer
+            nig = 0;
+        }
+
+        // Function to generate a random quadratic equation with integer solutions
+        function generateQuadratic() {
+            a = 1; // Coefficient of x^2 (fixed to 1 for simplicity)
+
+            // Get the min and max range values from user inputs, ensuring they are integers
+            let minRange = parseInt(document.getElementById('minRange').value);
+            let maxRange = parseInt(document.getElementById('maxRange').value);
+
+            // Validate that minRange and maxRange are integers
+            if (isNaN(minRange) || isNaN(maxRange)) {
+                alert("Please enter valid integer values for the ranges.");
+                return;
+            }
+
+            if (minRange >= maxRange) {
+                alert("The minimum range must be less than the maximum range.");
+                return;
+            }
+
+            // Ensure b and c are never 0 by regenerating if necessary
+            do {
+                b = Math.floor(Math.random() * (maxRange - minRange + 1)) + minRange;  // Random b in the range
+            } while (b === 0);  // Regenerate if b is 0
+
+            do {
+                c = Math.floor(Math.random() * (maxRange - minRange + 1)) + minRange;  // Random c in the range
+            } while (c === 0);  // Regenerate if c is 0
+
+            console.log(`Generated coefficients: a = ${a}, b = ${b}, c = ${c}`);
+
+            // Ensure the equation has integer solutions (discriminant is a perfect square)
+            let discriminant = b * b - 4 * a * c;
+            while (Math.sqrt(discriminant) % 1 !== 0) {  // While the discriminant isn't a perfect square
+                // Regenerate b and c within the range, ensuring neither is 0
+                do {
+                    b = Math.floor(Math.random() * (maxRange - minRange + 1)) + minRange;
+                } while (b === 0);
+
+                do {
+                    c = Math.floor(Math.random() * (maxRange - minRange + 1)) + minRange;
+                } while (c === 0);
+
+                discriminant = b * b - 4 * a * c;
+                console.log(`New coefficients: b = ${b}, c = ${c}, Discriminant: ${discriminant}`);
+            }
+
+            return {a, b, c};
+        }
+
+        // Function to solve the quadratic equation and find integer solutions
+        function solveQuadratic(a, b, c) {
+            let discriminant = b * b - 4 * a * c;
+            let root1 = (-b + Math.sqrt(discriminant)) / (2 * a);
+            let root2 = (-b - Math.sqrt(discriminant)) / (2 * a);
+            
+            // Return the integer solutions
+            return [Math.round(root1), Math.round(root2)];
+        }
+
+        // Event listener to generate a new quadratic equation
+        document.getElementById('generate-equation').addEventListener('click', function() {
+            // Stop the timer if it's running, then reset the timer
+            stopTimer(); 
+            timerStart = 0; // Reset the timer value
+            document.getElementById('timer').innerText = `Time: 0s`; // Reset the display to 0
+            
+            const {a, b, c} = generateQuadratic();
+            
+            if (!a || !b || !c) return;  // If no valid equation is generated, exit early
+
+            // Display the generated equation
+            let equation = `x²`;
+            if (b >= 0) equation += ` + ${b}x`;
+            else equation += ` - ${Math.abs(b)}x`;
+            if (c >= 0) equation += ` + ${c}`;
+            else equation += ` - ${Math.abs(c)}`;
+            equation += ' = 0';
+            document.getElementById('equation').innerText = equation;
+
+            // Enable the "Show Answer" button once the equation is generated
+            document.getElementById('show-answer').disabled = false;
+
+            // Start the timer after stopping it
+            startTimer();
+        });
+
+        // Event listener to show the answer when the button is clicked
+        document.getElementById('show-answer').addEventListener('click', function() {
+            const [root1, root2] = solveQuadratic(a, b, c);
+            document.getElementById('answer').innerText = `The integer solutions are: x1 = ${root1}, x2 = ${root2}`;
+
+            // Stop the timer when the answer is shown (but don't reset the timer)
+            stopTimer();
+        });
+    </script>
+
+</body>
+</html>
